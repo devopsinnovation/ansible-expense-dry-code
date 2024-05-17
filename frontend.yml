@@ -1,5 +1,0 @@
-- name: Frontend Execution using ansible
-  hosts: all
-  become: true
-  roles:
-    - frontend

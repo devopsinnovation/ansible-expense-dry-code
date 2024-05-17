@@ -1,0 +1,64 @@
+- name: setup prompt
+  ansible.builtin.shell: set-prompt backend
+
+- name: disable nodejs default version
+  ansible.builtin.shell: dnf module disable nodejs -y
+
+- name: disable nodejs
+  ansible.builtin.shell: dnf module enable nodejs:20 -y
+
+- name: Installing the nodejs
+  ansible.builtin.dnf:
+    name: nodejs
+    state: present
+
+- name: Add expense user
+  ansible.builtin.user:
+    name: expense
+
+- name: Copy the backend file
+  ansible.builtin.copy:
+    src: backend.service
+    dest: /etc/systemd/system/backend.service
+
+- name: remove a APP Directory
+  ansible.builtin.file:
+    name: /app
+    state: absent
+
+- name: create a APP Directory
+  ansible.builtin.file:
+    name: /app
+    state: directory
+
+- name: Download & Extract backend code
+  ansible.builtin.unarchive:
+    src: https://expense-artifacts.s3.amazonaws.com/expense-backend-v2.zip
+    dest: /app
+    remote_src: true
+
+- name: Download nodejs application
+  community.general.npm:
+    path: /app
+
+- name: Install MYSQL Client & MYSQL Python Module
+  ansible.builtin.dnf:
+    name:
+      - mysql
+    state: present
+
+- name: Load schema
+  community.mysql.mysql_db:
+    state: import
+    name: all
+    target: /app/schema/backend.sql
+    login_user: root
+    login_password: ExpenseApp@1
+    login_host: mysql-dev.devopsinnovation.online
+
+- name: Start backend service
+  ansible.builtin.systemd_service:
+    name: backend
+    state: restarted
+    enabled: true
+    daemon_reload: true
