@@ -1,4 +1,4 @@
-- name: backend Server installation
+- name: backend Server installation and check
   hosts: all
   become: true
   tasks:
