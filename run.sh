@@ -1,4 +1,4 @@
-if [$pipeline = true] then
+if ["$pipeline" == true]; then
   exit
 fi
 
